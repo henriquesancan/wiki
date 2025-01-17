@@ -30,15 +30,15 @@ services:
 
     chrome:
         container_name: chrome
-        image: selenium/standalone-chrome:latest
+        image: browserless/chrome
         ports:
-            - "4444:4444"
+            - "3000:3000"
+        environment:
+            - MAX_CONCURRENT_SESSIONS=10
+            - CONNECTION_TIMEOUT=30000
+            - ENABLE_DEBUGGER=true
         networks:
             - default
-
-volumes:
-    downloads:
-        driver: local
 
 networks:
     default:
