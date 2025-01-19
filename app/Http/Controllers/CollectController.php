@@ -6,15 +6,20 @@ use App\Models\Company;
 use App\Models\Extraction;
 use App\Models\Revenue;
 use App\Models\Sector;
+use App\Traits\ConvertMoneyTrait;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverBy;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 class CollectController extends Controller
 {
+    use ConvertMoneyTrait;
+
     protected RemoteWebDriver $driver;
 
     private const CHROME_HOST = 'chrome:3000/webdriver';
@@ -44,16 +49,26 @@ class CollectController extends Controller
     /**
      * Ponto de entrada principal para coletar e processar dados.
      *
-     * @return void
+     * @return JsonResponse Resposta em JSON com o status da operação.
      */
-    public function main(): void
+    public function main(): JsonResponse
     {
+        $response = $this->response();
+
         try {
             $data = $this->extractData();
 
             $this->saveData($data);
+
+            $response->status = Response::HTTP_OK;
+            $response->success = true;
+            $response->data = $data;
         } catch (Throwable $e) {
             Log::error($e->getMessage());
+
+            $response->errors = $e->getMessage();
+        } finally {
+            return response()->json($response, $response->status, $this->headers());
         }
     }
 
@@ -99,26 +114,6 @@ class CollectController extends Controller
         }
 
         return $data;
-    }
-
-    /**
-     * Converte strings financeiras formatadas para valores do tipo float.
-     *
-     * @param string $value
-     *
-     * @return float
-     */
-    private function convertToFloat(string $value): float
-    {
-        $value = str_replace(',', '.', $value);
-
-        if (str_contains($value, 'milhões')) {
-            $value = (float) str_replace('milhões', '', $value) * 1e6;
-        } else {
-            $value = (float) $value * 1e9;
-        }
-
-        return $value;
     }
 
     /**

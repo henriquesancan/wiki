@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon updated_at Data e hora da última atualização do registro.
  *
  * @method static create(array $array)
+ * @method static latest()
  */
 class Extraction extends Model
 {

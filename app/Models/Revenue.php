@@ -22,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property-read BelongsTo extraction() Relação com o modelo `Extraction`.
  *
  * @method static create(array $array) Cria um novo registro de receita com os atributos fornecidos.
+ * @method static whereExtractionId($id)
  */
 class Revenue extends Model
 {
